@@ -14,6 +14,8 @@ walkRight = [pygame.image.load("Game/R1.png"), pygame.image.load("Game/R2.png"),
              pygame.image.load("Game/R9.png")]
 bg = pygame.image.load("Game/bg.jpg")
 stand = pygame.image.load("Game/standing.png")
+screenWidth = 800
+screenHeight = 480
 
 
 # Main Character Class
@@ -56,23 +58,34 @@ class Character():
             #     else:
             #         win.blit(walkRight[0], (man.x, man.y))
 
-        pygame.display.update()
+
 
 
 class Projectile():
-    def __init__(self, x, y, radius, vel, direction):
+    def __init__(self, x, y, radius, color, direction):
         self.x = x
         self.y = y
         self.radius = radius
-        self.vel = vel
+        self.color = color
         self.direction = direction
+        self.vel = 8 * direction
+
+    def draw(self, win):
+        pygame.draw.circle(win, self.color, (self.x, self.y), self.radius)
+
+
+def reDrawWindow(man, bullets, win):
+    # On every frame, put the bg image first
+    win.blit(bg, (0, 0))
+    man.draw(win)
+    for bullet in bullets:
+        bullet.draw(win)
+    pygame.display.update()
 
 
 def main():
     # x = 300
     # y = 300
-    screenWidth = 800
-    screenHeight = 480
     clock = pygame.time.Clock()
     man = Character(300, 300, walkLeft[0].get_size()[0], walkLeft[0].get_size()[1], 5)
     bullets = []
@@ -95,6 +108,23 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
+
+            if event.type == pygame.KEYUP:
+                if event.key == pygame.K_SPACE:
+                    # if keys[pygame.K_SPACE]:
+                    facing = -1 if man.left else 1
+
+                    if len(bullets) < 50:
+                        bullets.append(
+                            Projectile(round(0.5 * man.width + man.x), round(0.5 * man.height + man.y), 3,
+                                       (255, 0, 0),
+                                       facing))
+
+        for bullet in bullets:
+            if 0 < bullet.x < screenWidth:
+                bullet.x += bullet.vel
+            else:
+                bullets.pop(bullets.index(bullet))
         keys = pygame.key.get_pressed()
 
         # These conditions respond to user key pressed
@@ -111,6 +141,7 @@ def main():
         else:
             man.moving = False
             man.walkCount = 0
+
         if not man.isJump:
             if keys[pygame.K_UP]:
                 man.isJump = True
@@ -122,14 +153,12 @@ def main():
                 neg = 1
                 if man.jumpCount <= 0:
                     neg = -1
-                man.y -= int((man.jumpCount ** 2) * 0.5 * neg)
+                man.y -= round((man.jumpCount ** 2) * 0.5 * neg)
                 man.jumpCount -= 1
             else:
                 man.isJump = False
                 man.jumpCount = 10
-        # On every frame, put the bg image first
-        win.blit(bg, (0, 0))
-        man.draw(win)
+        reDrawWindow(man, bullets, win)
     pygame.quit()
 
 
