@@ -7,7 +7,7 @@ screenHeight = 480
 
 
 # Main Character Class
-class Character():
+class Character:
     # Image load
     walkLeft = [pygame.image.load("Game/L1.png"), pygame.image.load("Game/L2.png"), pygame.image.load("Game/L3.png"),
                 pygame.image.load("Game/L4.png"),
@@ -62,7 +62,7 @@ class Character():
 
 
 
-class Projectile():
+class Projectile:
     def __init__(self, x, y, radius, color, direction):
         self.x = x
         self.y = y
@@ -75,7 +75,7 @@ class Projectile():
         pygame.draw.circle(win, self.color, (self.x, self.y), self.radius)
 
 
-class Enemy():
+class Enemy:
     walkLeft = [pygame.image.load("Game/L1E.png"), pygame.image.load("Game/L2E.png"), pygame.image.load("Game/L3E.png"),
                 pygame.image.load("Game/L4E.png"),
                 pygame.image.load("Game/L5E.png"), pygame.image.load("Game/L6E.png"), pygame.image.load("Game/L7E.png"),
@@ -91,33 +91,44 @@ class Enemy():
     def __init__(self, x, y, width, height, end):
         self.x = x
         self.y = y
+        self.start = x
         self.width = width
         self.height = height
         self.end = end
-        self.vel = 3
+        self.vel = 5
         self.walkCount = 0
 
     def draw(self, win):
         self.walk()
         if self.walkCount + 1 >= 33:
             self.walkCount = 0
+        if self.vel > 0:
+            win.blit(self.walkRight[self.walkCount // 3], (self.x, self.y))
+            self.walkCount += 1
         else:
-            if
-        pass
+            win.blit(self.walkLeft[self.walkCount // 3], (self.x, self.y))
+            self.walkCount += 1
 
     def walk(self):
         if self.vel > 0:
             if self.vel + self.x < self.end:
                 self.x += self.vel
-                self.walkCount += 1
-        pass
+            else:
+                self.vel = self.vel * -1
+                # self.walkCount = 0
+        else:
+            if self.vel + self.x > 0:
+                self.x += self.vel
+            else:
+                self.vel = self.vel * -1
+                # self.walkCount = 0
 
 
-
-def reDrawWindow(man, bullets, win):
+def reDrawWindow(man, goblin, bullets, win):
     # On every frame, put the bg image first
     win.blit(bg, (0, 0))
     man.draw(win)
+    goblin.draw(win)
     for bullet in bullets:
         bullet.draw(win)
     pygame.display.update()
@@ -127,7 +138,8 @@ def main():
     # x = 300
     # y = 300
     clock = pygame.time.Clock()
-    man = Character(300, 300, walkLeft[0].get_size()[0], walkLeft[0].get_size()[1], 5)
+    man = Character(300, 300, 64, 64, 5)
+    goblin = Enemy(100, 300, 64, 64, 600)
     bullets = []
 
     # width  = walkLeft[0].get_size()[0]
@@ -151,7 +163,6 @@ def main():
 
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_SPACE:
-                    # if keys[pygame.K_SPACE]:
                     facing = -1 if man.left else 1
 
                     if len(bullets) < 50:
@@ -198,7 +209,7 @@ def main():
             else:
                 man.isJump = False
                 man.jumpCount = 10
-        reDrawWindow(man, bullets, win)
+        reDrawWindow(man, goblin, bullets, win)
     pygame.quit()
 
 
