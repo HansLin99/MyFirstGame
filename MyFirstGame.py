@@ -1,4 +1,5 @@
 import pygame
+from pygame import *
 
 pygame.init()
 bg = pygame.image.load("Game/bg.jpg")
@@ -33,6 +34,7 @@ class Character:
         self.right = False
         self.left = False
         self.moving = False
+        self.hitbox = (self.x + 17, self.y + 11, 29, 52)
 
     # Based on the steps the man has walked, put the corresponding image onto the window
     # * Face to the direction which he stopped
@@ -58,6 +60,8 @@ class Character:
             #         win.blit(walkLeft[0], (man.x, man.y))
             #     else:
             #         win.blit(walkRight[0], (man.x, man.y))
+        self.hitbox = (self.x + 17, self.y + 11, 29, 52)
+        pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
 
 
 
@@ -97,6 +101,7 @@ class Enemy:
         self.end = end
         self.vel = 5
         self.walkCount = 0
+        self.hitbox = (self.x + 20, self.y, 28, 60)
 
     def draw(self, win):
         self.walk()
@@ -108,6 +113,8 @@ class Enemy:
         else:
             win.blit(self.walkLeft[self.walkCount // 3], (self.x, self.y))
             self.walkCount += 1
+        self.hitbox = (self.x + 20, self.y, 28, 60)
+        pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
 
     def walk(self):
         if self.vel > 0:
@@ -122,6 +129,10 @@ class Enemy:
             else:
                 self.vel = self.vel * -1
                 # self.walkCount = 0
+
+    def hit(self):
+        print("hit")
+
 
 
 def reDrawWindow(man, goblin, bullets, win):
@@ -172,6 +183,11 @@ def main():
                                        facing))
 
         for bullet in bullets:
+            # Condition: if the bullets are within the hitbox of the enemy
+            if bullet.y - bullet.radius > goblin.hitbox[1] and bullet.y + bullet.radius < goblin.hitbox[1] + goblin.hitbox[3]:
+                if bullet.x - bullet.radius > goblin.hitbox[0] and bullet.x + bullet.radius < goblin.hitbox[0] + goblin.hitbox[2]:
+                    goblin.hit()
+
             if 0 < bullet.x < screenWidth:
                 bullet.x += bullet.vel
             else:
