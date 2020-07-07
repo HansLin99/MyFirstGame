@@ -6,6 +6,7 @@ bg = pygame.image.load("Game/bg.jpg")
 screenWidth = 800
 screenHeight = 480
 
+score = 0
 
 # Main Character Class
 class Character:
@@ -61,7 +62,7 @@ class Character:
             #     else:
             #         win.blit(walkRight[0], (man.x, man.y))
         self.hitbox = (self.x + 17, self.y + 11, 29, 52)
-        pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
+        # pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
 
 
 
@@ -102,19 +103,24 @@ class Enemy:
         self.vel = 5
         self.walkCount = 0
         self.hitbox = (self.x + 20, self.y, 28, 60)
+        self.health = 10
+        self.visible = True
 
     def draw(self, win):
         self.walk()
-        if self.walkCount + 1 >= 33:
-            self.walkCount = 0
-        if self.vel > 0:
-            win.blit(self.walkRight[self.walkCount // 3], (self.x, self.y))
-            self.walkCount += 1
-        else:
-            win.blit(self.walkLeft[self.walkCount // 3], (self.x, self.y))
-            self.walkCount += 1
-        self.hitbox = (self.x + 20, self.y, 28, 60)
-        pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
+        if self.visible:
+            if self.walkCount + 1 >= 33:
+                self.walkCount = 0
+            if self.vel > 0:
+                win.blit(self.walkRight[self.walkCount // 3], (self.x, self.y))
+                self.walkCount += 1
+            else:
+                win.blit(self.walkLeft[self.walkCount // 3], (self.x, self.y))
+                self.walkCount += 1
+            self.hitbox = (self.x + 20, self.y, 28, 60)
+            pygame.draw.rect(win, (255, 0, 0), (self.hitbox[0], self.hitbox[1] - 20, 50, 10))
+            pygame.draw.rect(win, (0, 128, 0), (self.hitbox[0], self.hitbox[1] - 20, 50 - (5 * (10 - self.health)), 10))
+        # pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
 
     def walk(self):
         if self.vel > 0:
@@ -131,13 +137,20 @@ class Enemy:
                 # self.walkCount = 0
 
     def hit(self):
-        print("hit")
+        if self.health > 0:
+            global score
+            score += 1
+            self.health -= 1
+        else:
+            self.visible = False
 
 
 
-def reDrawWindow(man, goblin, bullets, win):
+def reDrawWindow(man, goblin, bullets, win, font):
     # On every frame, put the bg image first
     win.blit(bg, (0, 0))
+    text = font.render("Score: " + str(score),  1, (0,0,0))
+    win.blit(text, (390, 10))
     man.draw(win)
     goblin.draw(win)
     for bullet in bullets:
@@ -151,6 +164,7 @@ def main():
     clock = pygame.time.Clock()
     man = Character(300, 300, 64, 64, 5)
     goblin = Enemy(100, 300, 64, 64, 600)
+    font = pygame.font.SysFont("comicans", 30, True)
     bullets = []
 
     # width  = walkLeft[0].get_size()[0]
@@ -184,14 +198,17 @@ def main():
 
         for bullet in bullets:
             # Condition: if the bullets are within the hitbox of the enemy
-            if bullet.y - bullet.radius > goblin.hitbox[1] and bullet.y + bullet.radius < goblin.hitbox[1] + goblin.hitbox[3]:
-                if bullet.x - bullet.radius > goblin.hitbox[0] and bullet.x + bullet.radius < goblin.hitbox[0] + goblin.hitbox[2]:
-                    goblin.hit()
+            if goblin.visible:
+                if bullet.y - bullet.radius > goblin.hitbox[1] and bullet.y + bullet.radius < goblin.hitbox[1] + goblin.hitbox[3]:
+                    if bullet.x - bullet.radius > goblin.hitbox[0] and bullet.x + bullet.radius < goblin.hitbox[0] + goblin.hitbox[2]:
+                        goblin.hit()
+                        bullets.pop(bullets.index(bullet))
 
             if 0 < bullet.x < screenWidth:
                 bullet.x += bullet.vel
             else:
                 bullets.pop(bullets.index(bullet))
+
         keys = pygame.key.get_pressed()
 
         # These conditions respond to user key pressed
@@ -225,7 +242,7 @@ def main():
             else:
                 man.isJump = False
                 man.jumpCount = 10
-        reDrawWindow(man, goblin, bullets, win)
+        reDrawWindow(man, goblin, bullets, win, font)
     pygame.quit()
 
 
