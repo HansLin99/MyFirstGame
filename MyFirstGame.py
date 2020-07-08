@@ -36,33 +36,38 @@ class Character:
         self.left = False
         self.moving = False
         self.hitbox = (self.x + 17, self.y + 11, 29, 52)
+        self.health = 10
+        self.living = True
 
     # Based on the steps the man has walked, put the corresponding image onto the window
     # * Face to the direction which he stopped
     def draw(self, win):
-        if self.walkCount + 1 >= 27:
-            self.walkCount = 0
-        if self.moving:
-            if self.left:
-                win.blit(self.walkLeft[self.walkCount // 3], (self.x, self.y))
-                self.walkCount += 1
-            elif self.right:
-                win.blit(self.walkRight[self.walkCount // 3], (self.x, self.y))
-                self.walkCount += 1
-        else:
-            if self.left:
-                win.blit(self.walkLeft[0], (self.x, self.y))
-            elif self.right:
-                win.blit(self.walkRight[0], (self.x, self.y))
+        if self.living:
+            if self.walkCount + 1 >= 27:
+                self.walkCount = 0
+            if self.moving:
+                if self.left:
+                    win.blit(self.walkLeft[self.walkCount // 3], (self.x, self.y))
+                    self.walkCount += 1
+                elif self.right:
+                    win.blit(self.walkRight[self.walkCount // 3], (self.x, self.y))
+                    self.walkCount += 1
             else:
-                win.blit(self.stand, (self.x, self.y))
-            # else:
-            #     if man.left:
-            #         win.blit(walkLeft[0], (man.x, man.y))
-            #     else:
-            #         win.blit(walkRight[0], (man.x, man.y))
-        self.hitbox = (self.x + 17, self.y + 11, 29, 52)
-        # pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
+                if self.left:
+                    win.blit(self.walkLeft[0], (self.x, self.y))
+                elif self.right:
+                    win.blit(self.walkRight[0], (self.x, self.y))
+                else:
+                    win.blit(self.stand, (self.x, self.y))
+                # else:
+                #     if man.left:
+                #         win.blit(walkLeft[0], (man.x, man.y))
+                #     else:
+                #         win.blit(walkRight[0], (man.x, man.y))
+            self.hitbox = (self.x + 17, self.y + 11, 29, 52)
+            pygame.draw.rect(win, (255, 0, 0), (self.hitbox[0], self.hitbox[1] - 20, 50, 10))
+            pygame.draw.rect(win, (0, 128, 0), (self.hitbox[0], self.hitbox[1] - 20, 50 - (5 * (10 - self.health)), 10))
+            # pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
 
 
 
@@ -118,8 +123,8 @@ class Enemy:
                 win.blit(self.walkLeft[self.walkCount // 3], (self.x, self.y))
                 self.walkCount += 1
             self.hitbox = (self.x + 20, self.y, 28, 60)
-            pygame.draw.rect(win, (255, 0, 0), (self.hitbox[0], self.hitbox[1] - 20, 50, 10))
-            pygame.draw.rect(win, (0, 128, 0), (self.hitbox[0], self.hitbox[1] - 20, 50 - (5 * (10 - self.health)), 10))
+            pygame.draw.rect(win, (255, 0, 0), (self.hitbox[0], self.hitbox[1], 50, 10))
+            pygame.draw.rect(win, (0, 128, 0), (self.hitbox[0], self.hitbox[1], 50 - (5 * (10 - self.health)), 10))
         # pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
 
     def walk(self):
