@@ -38,6 +38,7 @@ class Character:
         self.hitbox = (self.x + 17, self.y + 11, 29, 52)
         self.health = 10
         self.living = True
+        self._hit = False
 
     # Based on the steps the man has walked, put the corresponding image onto the window
     # * Face to the direction which he stopped
@@ -65,10 +66,15 @@ class Character:
                 #     else:
                 #         win.blit(walkRight[0], (man.x, man.y))
             self.hitbox = (self.x + 17, self.y + 11, 29, 52)
-            pygame.draw.rect(win, (255, 0, 0), (self.hitbox[0], self.hitbox[1] - 20, 50, 10))
-            pygame.draw.rect(win, (0, 128, 0), (self.hitbox[0], self.hitbox[1] - 20, 50 - (5 * (10 - self.health)), 10))
+            pygame.draw.rect(win, (255, 0, 0), (self.hitbox[0], self.hitbox[1] - 17, 50, 10))
+            pygame.draw.rect(win, (0, 128, 0), (self.hitbox[0], self.hitbox[1] - 17, 50 - (5 * (10 - self.health)), 10))
             # pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
 
+    def hit(self, win):
+        if self.health > 0:
+            self.health -= 1
+        else:
+            self.living = False
 
 
 
@@ -123,8 +129,8 @@ class Enemy:
                 win.blit(self.walkLeft[self.walkCount // 3], (self.x, self.y))
                 self.walkCount += 1
             self.hitbox = (self.x + 20, self.y, 28, 60)
-            pygame.draw.rect(win, (255, 0, 0), (self.hitbox[0], self.hitbox[1], 50, 10))
-            pygame.draw.rect(win, (0, 128, 0), (self.hitbox[0], self.hitbox[1], 50 - (5 * (10 - self.health)), 10))
+            pygame.draw.rect(win, (255, 0, 0), (self.hitbox[0], self.hitbox[1] - 17, 50, 10))
+            pygame.draw.rect(win, (0, 128, 0), (self.hitbox[0], self.hitbox[1] - 17, 50 - (5 * (10 - self.health)), 10))
         # pygame.draw.rect(win, (255, 0, 0), self.hitbox, 2)
 
     def walk(self):
@@ -156,8 +162,14 @@ def reDrawWindow(man, goblin, bullets, win, font):
     win.blit(bg, (0, 0))
     text = font.render("Score: " + str(score),  1, (0,0,0))
     win.blit(text, (390, 10))
-    man.draw(win)
-    goblin.draw(win)
+    if man.living:
+        man.draw(win)
+        goblin.draw(win)
+    else:
+        text = 'Game Over'
+        font_1 = pygame.font.SysFont("comicans", 100, True)
+        over = font_1.render(text, 1, (0, 0, 0))
+        win.blit(over, (round(screenHeight / 2) - 80, round(screenHeight / 2)))
     for bullet in bullets:
         bullet.draw(win)
     pygame.display.update()
@@ -167,7 +179,7 @@ def main():
     # x = 300
     # y = 300
     clock = pygame.time.Clock()
-    man = Character(300, 300, 64, 64, 5)
+    man = Character(300, 300, 64, 64, 8)
     goblin = Enemy(100, 300, 64, 64, 600)
     font = pygame.font.SysFont("comicans", 30, True)
     bullets = []
@@ -247,6 +259,16 @@ def main():
             else:
                 man.isJump = False
                 man.jumpCount = 10
+
+        # Check for character collisions
+        if man.hitbox[0] < goblin.hitbox[0] < man.hitbox[0] + man.hitbox[2] or man.hitbox[0] < goblin.hitbox[0] + goblin.hitbox[2] < man.hitbox[0] + man.hitbox[2]:
+            if not man._hit:
+                man._hit = True
+                man.hit(win)
+        else:
+            man._hit = False
+
+
         reDrawWindow(man, goblin, bullets, win, font)
     pygame.quit()
 
